@@ -17,5 +17,5 @@ const config = {
 }
 
 window.addEventListener('load', () => {
-  enable3d(() => new Phaser.Game(config)).withPhysics('./lib')
+  enable3d(() => new Phaser.Game(config)).withPhysics('../lib')
 })
