@@ -1,6 +1,6 @@
-const { enable3d, Canvas } = ENABLE3D
-import MainScene from './scenes/mainScene.js'
-import PreloadScene from './scenes/preloadScene.js'
+const { enable3d, Canvas } = ENABLE3D;
+import MainScene from './scenes/mainScene.js';
+import PreloadScene from './scenes/preloadScene.js';
 
 const config = {
   type: Phaser.WEBGL,
@@ -17,5 +17,5 @@ const config = {
 }
 
 window.addEventListener('load', () => {
-  enable3d(() => new Phaser.Game(config)).withPhysics('../lib')
+  enable3d(() => new Phaser.Game(config)).withPhysics('lib');
 })
