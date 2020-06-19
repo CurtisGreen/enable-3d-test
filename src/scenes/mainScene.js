@@ -114,7 +114,7 @@ export default class MainScene extends Scene3D {
 
         //this.third.haveSomeFun()
 
-        this.third.load.texture('/assets/img/phaser-logo.png').then(grass => {
+        this.third.load.texture('./assets/img/phaser-logo.png').then(grass => {
             grass.wrapS = grass.wrapT = 1000; // RepeatWrapping
             grass.offset.set(0, 0);
             grass.repeat.set(2, 2);
