@@ -1,55 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+        />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
-    <meta name="theme-color" content="#000000" />
+        <meta name="theme-color" content="#000000" />
 
-    <script src="//cdn.jsdelivr.net/npm/phaser@3.22.0/dist/phaser.min.js"></script>
-    <script src="lib/enable3d.phaserExtension.0.19.1.min.js"></script>
-    <script type="module" src="src/game.js"></script>
+        <script src="//cdn.jsdelivr.net/npm/phaser@3.22.0/dist/phaser.min.js"></script>
+        <script src="lib/enable3d.phaserExtension.0.19.1.min.js"></script>
+        <script type="module" src="src/game.js"></script>
 
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="application-name" content="App Game" />
-    <meta name="apple-mobile-web-app-title" content="Apple Game" />
-    <meta name="msapplication-starturl" content="./" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="App Game" />
+        <meta name="apple-mobile-web-app-title" content="Apple Game" />
+        <meta name="msapplication-starturl" content="./" />
 
-    <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icons-192.png" />
-    <link rel="apple-touch-icon" type="image/png" sizes="192x192" href="./icons/icons-192.png" />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="192x192"
+            href="./assets/icons/icons-192.png"
+        />
+        <link
+            rel="apple-touch-icon"
+            type="image/png"
+            sizes="192x192"
+            href="./icons/icons-192.png"
+        />
 
-    <link rel="icon" type="image/png" sizes="512x512" href="./assets/icons/icons-512.png" />
-    <link rel="apple-touch-icon" type="image/png" sizes="512x512" href="./icons/icons-512.png" />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="512x512"
+            href="./assets/icons/icons-512.png"
+        />
+        <link
+            rel="apple-touch-icon"
+            type="image/png"
+            sizes="512x512"
+            href="./icons/icons-512.png"
+        />
 
-    <link rel="shortcut icon" href="./assets/icons/favicon.ico" type="image/x-icon" />
+        <link rel="shortcut icon" href="./assets/icons/favicon.ico" type="image/x-icon" />
 
-    <title>Game</title>
-    <style>
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-        background-color: #000000;
-      }
-    </style>
+        <title>Game</title>
+        <style>
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                background-color: #000000;
+            }
+        </style>
 
-    <noscript>Please enable javascript to continue using this application.</noscript>
+        <noscript>Please enable javascript to continue using this application.</noscript>
 
-    <!-- installs the serviceWorker -->
-    <!-- <script>
+        <!-- installs the serviceWorker -->
+        <!-- <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
         })
       }
     </script> -->
-  </head>
-  <body>
-    <div id="phaser-game"></div>
-  </body>
+    </head>
+    <body>
+        <div id="phaser-game"></div>
+    </body>
 </html>
