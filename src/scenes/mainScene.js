@@ -7,18 +7,18 @@ const {
     ThirdPersonControls,
     PointerLock,
     PointerDrag,
+    JoyStick,
 } = ENABLE3D;
 
 const isTouchDevice = "ontouchstart" in window;
 
 export default class MainScene extends Scene3D {
-    placementBox = {};
-
     constructor() {
         super({ key: "MainScene" });
     }
 
     init() {
+        this.placementBox = {};
         this.accessThirdDimension();
 
         this.selected = null;
@@ -145,6 +145,35 @@ export default class MainScene extends Scene3D {
             space: this.input.keyboard.addKey(32),
             shift: this.input.keyboard.addKey("shift"),
         };
+
+        // Mobile joystick controls
+        if (isTouchDevice) {
+            const joystick = new JoyStick();
+            const axis = joystick.add.axis({
+                styles: { left: 35, bottom: 35, size: 100 },
+            });
+            axis.onMove((event) => {
+                // Update camera
+                const { top, right } = event;
+                this.moveTop = top * 25;
+                this.moveRight = right * 25;
+            });
+
+            // Jump button
+            const buttonA = joystick.add.button({
+                letter: "A",
+                styles: { right: 35, bottom: 110, size: 80 },
+            });
+            buttonA.onClick(() => this.jump());
+
+            // Move button
+            const buttonB = joystick.add.button({
+                letter: "B",
+                styles: { right: 110, bottom: 35, size: 80 },
+            });
+            buttonB.onClick(() => (this.move = true));
+            buttonB.onRelease(() => (this.move = false));
+        }
     }
 
     getGroundPointer() {
@@ -264,7 +293,7 @@ export default class MainScene extends Scene3D {
                 backwards = false;
 
             // Forward/backwards
-            if (this.keys.w.isDown) {
+            if (this.keys.w.isDown || this.move) {
                 forwards = true;
                 curAngle = theta;
             } else if (this.keys.s.isDown) {
