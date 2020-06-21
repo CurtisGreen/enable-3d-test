@@ -17,15 +17,13 @@ export default class MainScene extends Scene3D {
         super({ key: "MainScene" });
     }
 
-    init() {
-        this.placementBox = {};
+    init(graphicsSettings) {
+        this.graphicsSettings = graphicsSettings;
+
         this.accessThirdDimension();
 
+        this.placementBox = {};
         this.selected = null;
-        //this.mousePosition = new THREE.Vector3();
-        //this.blockOffset = new THREE.Vector3();
-        this.prev == { x: 0, y: 0 };
-
         this.canJump = true;
         this.move = false;
         this.moveTop = 0;
@@ -33,9 +31,16 @@ export default class MainScene extends Scene3D {
     }
 
     create() {
-        // adjust width and height
-        this.third.renderer.setSize(2000, 1000);
-        this.third.camera.aspect = 2000 / 1000;
+        // Get graphics settings
+        const DPR = window.devicePixelRatio * this.graphicsSettings;
+        const { width, height } = window.screen;
+        const WIDTH = Math.round(Math.max(width, height) * DPR);
+        const HEIGHT = Math.round(Math.min(width, height) * DPR);
+        console.log(WIDTH, HEIGHT)
+
+        // Adjust width and height
+        this.third.renderer.setSize(WIDTH, HEIGHT);
+        this.third.camera.aspect = WIDTH / HEIGHT;
         this.third.camera.updateProjectionMatrix();
 
         this.third.warpSpeed("-orbitControls");
