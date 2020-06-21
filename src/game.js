@@ -1,6 +1,7 @@
 const { enable3d, Canvas } = ENABLE3D;
 import MainScene from "./scenes/mainScene.js";
 import PreloadScene from "./scenes/preloadScene.js";
+import MenuScene from "./scenes/menuScene.js";
 
 const config = {
     type: Phaser.WEBGL,
@@ -8,11 +9,11 @@ const config = {
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: 1280,
-        height: 720,
+        width: window.innerWidth * Math.max(1, window.devicePixelRatio / 2),
+        height: window.innerHeight * Math.max(1, window.devicePixelRatio / 2),
     },
     parent: "phaser-game",
-    scene: [PreloadScene, MainScene],
+    scene: [PreloadScene, MainScene, MenuScene],
     ...Canvas(),
 };
 

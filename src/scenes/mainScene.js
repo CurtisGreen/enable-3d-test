@@ -1,4 +1,4 @@
-//import { Scene3D } from '../lib/enable3d/phaser-extension'
+import { Button } from "../ui/button.js";
 const {
     enable3d,
     Scene3D,
@@ -17,8 +17,10 @@ export default class MainScene extends Scene3D {
         super({ key: "MainScene" });
     }
 
-    init(graphicsSettings) {
-        this.graphicsSettings = graphicsSettings;
+    init([width, height]) {
+        console.log(width, height);
+        this.width = width;
+        this.height = height;
 
         this.accessThirdDimension();
 
@@ -32,15 +34,10 @@ export default class MainScene extends Scene3D {
 
     create() {
         // Get graphics settings
-        const DPR = window.devicePixelRatio * this.graphicsSettings;
-        const { width, height } = window.screen;
-        const WIDTH = Math.round(Math.max(width, height) * DPR);
-        const HEIGHT = Math.round(Math.min(width, height) * DPR);
-        console.log(WIDTH, HEIGHT)
-
-        // Adjust width and height
-        this.third.renderer.setSize(WIDTH, HEIGHT);
-        this.third.camera.aspect = WIDTH / HEIGHT;
+        console.log(this.width, this.height);
+        this.scale.resize(this.width, this.height);
+        this.third.renderer.setSize(this.width, this.height);
+        this.third.camera.aspect = this.width / this.height;
         this.third.camera.updateProjectionMatrix();
 
         this.third.warpSpeed("-orbitControls");
@@ -179,6 +176,9 @@ export default class MainScene extends Scene3D {
             buttonB.onClick(() => (this.move = true));
             buttonB.onRelease(() => (this.move = false));
         }
+
+        // Menu to switch between levels
+        this.scene.launch("MenuScene");
     }
 
     getGroundPointer() {
