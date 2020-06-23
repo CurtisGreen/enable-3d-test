@@ -22,6 +22,9 @@ export default class PreloadScene extends Phaser.Scene {
             .text(x + buttonWidth / 2, y - buttonHeight, "Resolution")
             .setOrigin(0.5, 0.5);
 
+        // Reduce height by browser bar
+        let browserBarHeight = this.getBrowserBarHeight();
+
         // High
         let [fullWidth, fullHeight] = this.getResolution(1);
         let text = "Full screen (" + fullWidth + "x" + fullHeight + ")";
@@ -30,7 +33,7 @@ export default class PreloadScene extends Phaser.Scene {
             console.log("high");
             console.log(fullHeight);
             this.scene.launch("MenuScene");
-            this.scene.start("MainScene", [fullWidth, fullHeight]);
+            this.scene.start("MainScene", [fullWidth, fullHeight - browserBarHeight]);
         });
 
         // Medium
@@ -41,7 +44,7 @@ export default class PreloadScene extends Phaser.Scene {
         medium.on("pointerdown", () => {
             console.log("medium");
             this.scene.launch("MenuScene");
-            this.scene.start("MainScene", [medWidth, medHeight]);
+            this.scene.start("MainScene", [medWidth, medHeight - browserBarHeight]);
         });
 
         // Low
@@ -52,7 +55,7 @@ export default class PreloadScene extends Phaser.Scene {
         low.on("pointerdown", () => {
             console.log("low");
             this.scene.launch("MenuScene");
-            this.scene.start("MainScene", [lowWidth, lowHeight]);
+            this.scene.start("MainScene", [lowWidth, lowHeight - browserBarHeight]);
         });
     }
 
@@ -61,8 +64,14 @@ export default class PreloadScene extends Phaser.Scene {
         const DPR = window.devicePixelRatio * resRatio;
         const { width, height } = window.screen;
         const WIDTH = Math.round(Math.max(width, height) * DPR);
-        const HEIGHT = Math.round(Math.min(width, height) * DPR);
+        let HEIGHT = Math.round(Math.min(width, height) * DPR);
 
         return [WIDTH, HEIGHT];
+    }
+
+    getBrowserBarHeight() {
+        const availableHeight = window.innerHeight * Math.max(1, window.devicePixelRatio / 2);
+        const maxHeight = window.screen.height * Math.max(1, window.devicePixelRatio / 2);
+        return maxHeight - availableHeight;
     }
 }
