@@ -4,13 +4,13 @@ export default class MenuScene extends Phaser.Scene {
     constructor() {
         super({ key: "MenuScene" });
 
-        this.currentLevel = 1;
+        this.currentLevel = "MainCopyScene";
     }
 
     preload() {}
 
     create() {
-        const buttonWidth = 80;
+        const buttonWidth = 160;
         const buttonHeight = 50;
         let x = 50;
         let y = 50;
@@ -19,33 +19,42 @@ export default class MenuScene extends Phaser.Scene {
             .text(x + buttonWidth / 2, y - buttonHeight / 2, "Level select")
             .setOrigin(0.5, 0.5);
 
-        // High
-        let lv1 = new Button(this, x, y, buttonWidth, buttonHeight, "Level 1");
+        // Third person, control character
+        let lv1 = new Button(this, x, y, buttonWidth, buttonHeight, "Movement type 1");
         lv1.on("pointerdown", () => {
-            console.log("lv1");
-            if (this.currentLevel != 1) {
+            if (this.currentLevel != "MainScene") {
+                this.scene.stop(this.currentLevel);
+
+                console.log("lv1");
+                this.scene.launch("MainScene", {});
+                this.currentLevel = "MainScene";
             }
-            //this.scene.start("MainScene", 1);
         });
 
-        // Medium
+        // Third person, controls camera, fixed angle
         y += buttonHeight * 2;
-        let lv2 = new Button(this, x, y, buttonWidth, buttonHeight, "Level 2");
+        let lv2 = new Button(this, x, y, buttonWidth, buttonHeight, "Movement type 2");
         lv2.on("pointerdown", () => {
-            console.log("lv2");
-            if (this.currentLevel != 2) {
+            if (this.currentLevel != "StrategyScene") {
+                this.scene.stop(this.currentLevel);
+
+                console.log("lv2");
+                this.scene.launch("StrategyScene", {});
+                this.currentLevel = "StrategyScene";
             }
-            //this.scene.start("MainScene", 0.75);
         });
 
-        // Low
-        y += buttonHeight * 2;
+        // TBD
+        /*(y += buttonHeight * 2;
         let lv3 = new Button(this, x, y, buttonWidth, buttonHeight, "Level 3");
         lv3.on("pointerdown", () => {
-            console.log("lv3");
-            if (this.currentLevel != 3) {
-            }
-            //this.scene.start("MainScene", 0.5);
-        });
+            //if (this.currentLevel != "MainCopyScene") {
+                this.scene.stop(this.currentLevel);
+
+                console.log("lv3");
+                this.scene.launch("MainCopyScene", {});
+                this.currentLevel = "MainCopyScene";
+            //}
+        });*/
     }
 }

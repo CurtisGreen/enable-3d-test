@@ -29,6 +29,7 @@ export default class PreloadScene extends Phaser.Scene {
         high.on("pointerdown", () => {
             console.log("high");
             console.log(fullHeight);
+            this.scene.launch("MenuScene");
             this.scene.start("MainScene", [fullWidth, fullHeight]);
         });
 
@@ -39,6 +40,7 @@ export default class PreloadScene extends Phaser.Scene {
         let medium = new Button(this, x, y, buttonWidth, buttonHeight, text);
         medium.on("pointerdown", () => {
             console.log("medium");
+            this.scene.launch("MenuScene");
             this.scene.start("MainScene", [medWidth, medHeight]);
         });
 
@@ -49,6 +51,7 @@ export default class PreloadScene extends Phaser.Scene {
         let low = new Button(this, x, y, buttonWidth, buttonHeight, text);
         low.on("pointerdown", () => {
             console.log("low");
+            this.scene.launch("MenuScene");
             this.scene.start("MainScene", [lowWidth, lowHeight]);
         });
     }

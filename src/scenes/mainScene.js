@@ -17,125 +17,67 @@ export default class MainScene extends Scene3D {
         super({ key: "MainScene" });
     }
 
-    init([width, height]) {
-        console.log(width, height);
-        this.width = width;
-        this.height = height;
+    init(data) {
+        if (data.length != undefined) {
+            let [width, height] = data;
+            this.width = width;
+            this.height = height;
+            this.changeResolution = true;
+        } else {
+            this.changeResolution = false;
+        }
 
         this.accessThirdDimension();
 
         this.placementBox = {};
-        this.selected = null;
         this.canJump = true;
         this.move = false;
         this.moveTop = 0;
         this.moveRight = 0;
+        this.player = {};
+        this.prevY = 0;
     }
 
-    create() {
+    async create() {
         // Get graphics settings
-        console.log(this.width, this.height);
-        this.scale.resize(this.width, this.height);
-        this.third.renderer.setSize(this.width, this.height);
-        this.third.camera.aspect = this.width / this.height;
-        this.third.camera.updateProjectionMatrix();
+        if (this.changeResolution) {
+            this.scale.resize(this.width, this.height);
+            this.third.renderer.setSize(this.width, this.height);
+            this.third.camera.aspect = this.width / this.height;
+            this.third.camera.updateProjectionMatrix();
+        }
 
-        this.third.warpSpeed("-orbitControls");
+        // Create environment
+        this.third.warpSpeed("light", "sky");
 
-        this.third.add.box({ x: 1, y: 2 });
+        // Add ground
+        this.ground = this.third.physics.add.box({
+            x: 0,
+            y: -1.5,
+            z: 1,
+            width: 20,
+            depth: 20,
+            height: 1,
+            mass: 0,
+        });
+
+        // Box without physics
+        this.third.add.box({ x: 1, y: 2 }, { lambert: { color: 0xeb4034 } });
+
+        // Boxes with physics
         this.test = this.third.physics.add.box({ x: -1, y: 0.5 });
         let test2 = this.third.physics.add.box({ x: 3, y: 0.5 });
         let test3 = this.third.physics.add.box({ x: -2, y: 0.5 });
 
         // Show where you will add a box
         this.placementBox = this.third.add.box(
-            { x: 1, y: 1, z: 1, width: 1, height: 0.1 },
+            { x: 1, y: 0, z: 1, width: 1, height: 0.1 },
             { lambert: { color: 0x0000ff } }
         );
 
         // Create box on click
         this.input.on("pointerdown", (pointer) => {
-            // const v3 = new THREE.Vector3();
-            // const rotation = this.third.camera.getWorldDirection(v3);
-            // this.third.physics.add.box(this.orc.position);
-
             this.third.physics.add.box(this.getGroundPointer());
-        });
-
-        // Load Orc
-        this.third.load.gltf("assets/img/orc.glb").then((object) => {
-            const scene = object.scenes[0];
-
-            this.orc = new ExtendedObject3D();
-            this.orc.name = "orc";
-            this.orc.add(scene);
-            this.orc.position.set(7, 1, 0);
-            this.third.add.existing(this.orc);
-
-            this.orc.traverse((child) => {
-                if (child.isMesh) {
-                    child.castShadow = child.receiveShadow = true;
-                    child.material.metalness = 0;
-                    child.material.roughness = 1;
-                }
-            });
-
-            this.third.physics.add.existing(this.orc, {
-                shape: "sphere",
-                radius: 0.25,
-                width: 0.5,
-                offset: { y: -0.15 },
-            });
-            this.orc.body.setFriction(0.8);
-            this.orc.body.setAngularFactor(0, 0, 0);
-            this.orc.body.setCcdMotionThreshold(1e-7);
-            this.orc.body.setCcdSweptSphereRadius(0.25);
-
-            // Control orc
-            this.controls = new ThirdPersonControls(this.third.camera, this.orc, {
-                offset: new THREE.Vector3(0, 1, 0),
-                targetRadius: 4, // Distance from character
-                sensitivity: { x: 0.11, y: 0.11 },
-            });
-
-            // Initial view angle
-            this.controls.theta = 90;
-
-            // Add pointer lock and drag
-            if (!isTouchDevice) {
-                let pointerLock = new PointerLock(this.game.canvas);
-                let pointerDrag = new PointerDrag(this.game.canvas);
-
-                pointerDrag.onMove((delta) => {
-                    if (pointerLock.isLocked()) {
-                        // Limit looking at sky
-                        if (
-                            this.controls.phi > -7 ||
-                            (this.controls.phi <= -7 && delta.y > 0)
-                        ) {
-                            this.moveTop = -delta.y;
-                        }
-
-                        this.moveRight = delta.x;
-                    }
-                });
-            }
-        });
-
-        //test2.body.setCollisionFlags(0)
-
-        //this.third.haveSomeFun()
-
-        this.third.load.texture("assets/img/phaser-logo.png").then((grass) => {
-            grass.wrapS = grass.wrapT = 1000; // RepeatWrapping
-            grass.offset.set(0, 0);
-            grass.repeat.set(2, 2);
-
-            // BUG: To add shadows to your ground, set transparent = true
-            this.ground = this.third.physics.add.ground(
-                { width: 20, height: 20, y: -1 },
-                { phong: { map: grass, transparent: true } }
-            );
         });
 
         // Controls
@@ -148,37 +90,47 @@ export default class MainScene extends Scene3D {
             shift: this.input.keyboard.addKey("shift"),
         };
 
-        // Mobile joystick controls
         if (isTouchDevice) {
-            const joystick = new JoyStick();
-            const axis = joystick.add.axis({
-                styles: { left: 35, bottom: 35, size: 100 },
-            });
-            axis.onMove((event) => {
-                // Update camera
-                const { top, right } = event;
-                this.moveTop = top * 25;
-                this.moveRight = right * 25;
-            });
-
-            // Jump button
-            const buttonA = joystick.add.button({
-                letter: "A",
-                styles: { right: 35, bottom: 110, size: 80 },
-            });
-            buttonA.onClick(() => this.jump());
-
-            // Move button
-            const buttonB = joystick.add.button({
-                letter: "B",
-                styles: { right: 110, bottom: 35, size: 80 },
-            });
-            buttonB.onClick(() => (this.move = true));
-            buttonB.onRelease(() => (this.move = false));
+            this.createMobileControls();
         }
 
-        // Menu to switch between levels
-        this.scene.launch("MenuScene");
+        // Create player
+        this.player = this.third.physics.add.sphere(
+            { x: 7, y: 1, z: 0, radius: 0.25, width: 0.5 /*, offset: { y: -0.15 }*/ },
+            { standard: { wireframe: true } }
+        );
+        this.player.body.setFriction(0.8);
+        this.player.body.setAngularFactor(0, 0, 0);
+        this.player.body.setCcdMotionThreshold(1e-7);
+        this.player.body.setCcdSweptSphereRadius(0.25);
+
+        // Control player
+        this.controls = new ThirdPersonControls(this.third.camera, this.player, {
+            offset: new THREE.Vector3(0, 1, 0),
+            targetRadius: 4, // Distance from character
+            sensitivity: { x: 0.11, y: 0.11 },
+        });
+        this.controls.theta = 90;
+
+        // Get mouse to control camera
+        if (!isTouchDevice) {
+            let pointerLock = new PointerLock(this.game.canvas);
+            let pointerDrag = new PointerDrag(this.game.canvas);
+
+            pointerDrag.onMove((delta) => {
+                if (pointerLock.isLocked()) {
+                    // Limit looking at sky
+                    if (
+                        this.controls.phi > -7 ||
+                        (this.controls.phi <= -7 && delta.y > 0)
+                    ) {
+                        this.moveTop = -delta.y;
+                    }
+
+                    this.moveRight = delta.x;
+                }
+            });
+        }
     }
 
     getGroundPointer() {
@@ -190,9 +142,9 @@ export default class MainScene extends Scene3D {
 
             if (intersection.length != 0) {
                 let output = {
-                    x: Math.ceil(intersection[0].point.x),
-                    y: Math.ceil(intersection[0].point.y),
-                    z: Math.ceil(intersection[0].point.z),
+                    x: Math.round(intersection[0].point.x),
+                    y: Math.round(intersection[0].point.y),
+                    z: Math.round(intersection[0].point.z),
                 };
                 return output;
             } else {
@@ -203,56 +155,44 @@ export default class MainScene extends Scene3D {
         }
     }
 
-    getMouseoverObjects() {
-        // Check line of sight to obj
-        const { x, y } = this.getPointer();
-        const raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera({ x, y }, this.third.camera);
-        const intersection = raycaster.intersectObjects([this.test, this.ground]);
+    // Mobile joystick controls
+    createMobileControls() {
+        const joystick = new JoyStick();
+        const axis = joystick.add.axis({
+            styles: { left: 35, bottom: 35, size: 100 },
+        });
+        axis.onMove((event) => {
+            // Update camera
+            const { top, right } = event;
+            this.moveTop = top * 25;
+            this.moveRight = right * 25;
+        });
 
-        if (intersection.length != 0) {
-            console.log(intersection[0].point);
-            this.third.physics.add.box(intersection[0].point);
-        }
+        // Jump button
+        const buttonA = joystick.add.button({
+            letter: "A",
+            styles: { right: 35, bottom: 110, size: 80 },
+        });
+        buttonA.onClick(() => this.jump());
 
-        // Clicked obj
-        if (intersection.length > 0) {
-            const obj = intersection[0].object;
-
-            if (obj != undefined) {
-                this.selected = obj;
-                this.selected.body.setCollisionFlags(2);
-
-                if (this.curSelection != undefined) {
-                    // this.third.destroy(this.curSelection);
-                    this.curSelection.visible = false;
-                }
-
-                this.curSelection = this.third.add.box({
-                    x: Math.floor(x - 1),
-                    y: Math.ceil(y),
-                });
-                console.log(x, y);
-            }
-        }
+        // Move button
+        const buttonB = joystick.add.button({
+            letter: "B",
+            styles: { right: 110, bottom: 35, size: 80 },
+        });
+        buttonB.onClick(() => (this.move = true));
+        buttonB.onRelease(() => (this.move = false));
     }
 
     jump() {
-        if (!this.orc || !this.canJump) return;
-
-        this.canJump = false;
-        this.time.addEvent({
-            delay: 1500,
-            callback: () => {
-                this.canJump = true;
-            },
-        });
-        this.orc.body.applyForceY(6);
+        if (this.player && this.canJump) {
+            this.player.body.applyForceY(6);
+        }
     }
 
     updateMovement() {
-        // Move orc
-        if (this.orc && this.orc.body) {
+        // Move player
+        if (this.player && this.player.body) {
             // Update controls
             this.controls.update(this.moveRight, -this.moveTop);
             if (!isTouchDevice) this.moveRight = this.moveTop = 0;
@@ -269,29 +209,29 @@ export default class MainScene extends Scene3D {
             const rotation = this.third.camera.getWorldDirection(v3);
             const theta = Math.atan2(rotation.x, rotation.z);
 
-            // Get orc direction
-            const orcRotation = this.orc.getWorldDirection(v3);
-            const orcTheta = Math.atan2(orcRotation.x, orcRotation.z);
-            this.orc.body.setAngularVelocityY(0);
+            // Get player direction
+            const playerRotation = this.player.getWorldDirection(v3);
+            const playerTheta = Math.atan2(playerRotation.x, playerRotation.z);
+            this.player.body.setAngularVelocityY(0);
 
-            // Turn orc
-            const l = Math.abs(theta - orcTheta);
+            // Turn player
+            const l = Math.abs(theta - playerTheta);
             let d = Math.PI / 24;
             if (l > d) {
                 if (l > Math.PI - d) {
                     turnSpeed *= -1;
                 }
-                if (theta < orcTheta) {
+                if (theta < playerTheta) {
                     turnSpeed *= -1;
                 }
 
-                this.orc.body.setAngularVelocityY(turnSpeed);
+                this.player.body.setAngularVelocityY(turnSpeed);
             }
 
             // Move
             let moveSpeed = 4;
             let x = 0,
-                y = this.orc.body.velocity.y,
+                y = this.player.body.velocity.y,
                 z = 0,
                 curAngle = 0,
                 forwards = false,
@@ -336,21 +276,33 @@ export default class MainScene extends Scene3D {
             if (curAngle != 0) {
                 x = Math.sin(curAngle) * moveSpeed;
                 z = Math.cos(curAngle) * moveSpeed;
-                this.orc.body.setVelocity(x, y, z);
+                this.player.body.setVelocity(x, y, z);
             } else {
-                this.orc.body.setVelocity(0, y, 0);
+                this.player.body.setVelocity(0, y, 0);
             }
 
             // Jump
-            if (this.keys.space.isDown && this.canJump) {
+            if (this.keys.space.isDown) {
                 this.jump();
             }
+
+            // Check jump conditions
+            if (
+                this.player.position.y <= this.prevY &&
+                this.player.body.velocity.y > -0.1 &&
+                this.player.body.velocity.y < 0.1
+            ) {
+                this.canJump = true;
+            } else {
+                this.canJump = false;
+            }
+            this.prevY = this.player.position.y;
         }
     }
 
     updatePlacementBox() {
         let point = this.getGroundPointer();
-        if (point) {
+        if (point && this.placementBox.position != undefined) {
             this.placementBox.position.x = point.x;
             this.placementBox.position.y = point.y;
             this.placementBox.position.z = point.z;
@@ -358,14 +310,9 @@ export default class MainScene extends Scene3D {
         } else {
             this.placementBox.visible = false;
         }
-        //this.placementBox.body.needUpdate = true;
     }
 
     update() {
-        //this.test.body.setCollisionFlags(2); // kinematic
-        //this.test.position.x += .05;
-        //this.test.body.needUpdate = true;
-
         this.updateMovement();
         this.updatePlacementBox();
     }

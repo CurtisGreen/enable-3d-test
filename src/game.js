@@ -2,6 +2,7 @@ const { enable3d, Canvas } = ENABLE3D;
 import MainScene from "./scenes/mainScene.js";
 import PreloadScene from "./scenes/preloadScene.js";
 import MenuScene from "./scenes/menuScene.js";
+import StrategyScene from "./scenes/strategyScene.js";
 
 const config = {
     type: Phaser.WEBGL,
@@ -13,7 +14,7 @@ const config = {
         height: window.innerHeight * Math.max(1, window.devicePixelRatio / 2),
     },
     parent: "phaser-game",
-    scene: [PreloadScene, MainScene, MenuScene],
+    scene: [PreloadScene, MainScene, StrategyScene, MenuScene],
     ...Canvas(),
 };
 
