@@ -94,6 +94,10 @@ export default class MainScene extends Scene3D {
 
         // Create box on click
         this.input.on("pointerdown", (pointer) => {
+            if (!this.pointerLock.isLocked()) {
+                console.log("requested");
+                this.pointerLock.request();
+            }
             this.third.physics.add.box(this.getGroundPointer());
         });
 
@@ -143,11 +147,11 @@ export default class MainScene extends Scene3D {
 
             // Get mouse to control camera
             if (!isTouchDevice) {
-                let pointerLock = new PointerLock(this.game.canvas);
+                this.pointerLock = new PointerLock(this.game.canvas);
                 let pointerDrag = new PointerDrag(this.game.canvas);
 
                 pointerDrag.onMove((delta) => {
-                    if (pointerLock.isLocked()) {
+                    if (this.pointerLock.isLocked()) {
                         // Limit looking at sky
                         if (
                             this.controls.phi > -7 ||
@@ -160,6 +164,10 @@ export default class MainScene extends Scene3D {
                     }
                 });
             }
+        });
+
+        this.events.on("shutdown", () => {
+            this.pointerLock.exit();
         });
     }
 
