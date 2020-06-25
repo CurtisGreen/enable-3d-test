@@ -70,7 +70,8 @@ export default class PreloadScene extends Phaser.Scene {
     }
 
     getBrowserBarHeight() {
-        const availableHeight = window.innerHeight * Math.max(1, window.devicePixelRatio / 2);
+        const availableHeight =
+            window.innerHeight * Math.max(1, window.devicePixelRatio / 2);
         const maxHeight = window.screen.height * Math.max(1, window.devicePixelRatio / 2);
         return maxHeight - availableHeight;
     }

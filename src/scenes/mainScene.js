@@ -38,6 +38,11 @@ export default class MainScene extends Scene3D {
         this.prevY = 0;
     }
 
+    preload() {
+        this.third.load.preload("floorTexture", "assets/img/phaser-logo.png");
+        this.third.load.preload("orc", "assets/img/orc.glb");
+    }
+
     async create() {
         // Get graphics settings
         if (this.changeResolution) {
@@ -50,15 +55,27 @@ export default class MainScene extends Scene3D {
         // Create environment
         this.third.warpSpeed("light", "sky");
 
-        // Add ground
-        this.ground = this.third.physics.add.box({
-            x: 0,
-            y: -1.5,
-            z: 1,
-            width: 20,
-            depth: 20,
-            height: 1,
-            mass: 0,
+        // Load texture and add ground
+        this.third.load.texture("floorTexture").then((texture) => {
+            texture.wrapS = texture.wrapT = 1000; // RepeatWrapping
+            texture.offset.set(0, 0);
+            texture.repeat.set(2, 2);
+
+            // Add ground
+            this.ground = this.third.physics.add.box(
+                {
+                    x: 0,
+                    y: -1.5,
+                    z: 1,
+                    width: 20,
+                    depth: 20,
+                    height: 1,
+                    mass: 0,
+                },
+                {
+                    phong: { map: texture, transparent: true },
+                }
+            );
         });
 
         // Box without physics
@@ -95,42 +112,55 @@ export default class MainScene extends Scene3D {
         }
 
         // Create player
-        this.player = this.third.physics.add.sphere(
-            { x: 7, y: 1, z: 0, radius: 0.25, width: 0.5 /*, offset: { y: -0.15 }*/ },
-            { standard: { wireframe: true } }
-        );
-        this.player.body.setFriction(0.8);
-        this.player.body.setAngularFactor(0, 0, 0);
-        this.player.body.setCcdMotionThreshold(1e-7);
-        this.player.body.setCcdSweptSphereRadius(0.25);
+        this.third.load.gltf("orc").then((player) => {
+            const scene = player.scenes[0];
 
-        // Control player
-        this.controls = new ThirdPersonControls(this.third.camera, this.player, {
-            offset: new THREE.Vector3(0, 1, 0),
-            targetRadius: 4, // Distance from character
-            sensitivity: { x: 0.11, y: 0.11 },
-        });
-        this.controls.theta = 90;
+            this.player = new ExtendedObject3D();
+            this.player.name = "player";
+            this.player.add(scene);
+            this.player.position.set(7, 1, 0);
+            this.third.add.existing(this.player);
 
-        // Get mouse to control camera
-        if (!isTouchDevice) {
-            let pointerLock = new PointerLock(this.game.canvas);
-            let pointerDrag = new PointerDrag(this.game.canvas);
-
-            pointerDrag.onMove((delta) => {
-                if (pointerLock.isLocked()) {
-                    // Limit looking at sky
-                    if (
-                        this.controls.phi > -7 ||
-                        (this.controls.phi <= -7 && delta.y > 0)
-                    ) {
-                        this.moveTop = -delta.y;
-                    }
-
-                    this.moveRight = delta.x;
-                }
+            this.third.physics.add.existing(this.player, {
+                shape: "sphere",
+                radius: 0.25,
+                width: 0.5,
+                offset: { y: -0.15 },
             });
-        }
+
+            this.player.body.setFriction(0.8);
+            this.player.body.setAngularFactor(0, 0, 0);
+            this.player.body.setCcdMotionThreshold(1e-7);
+            this.player.body.setCcdSweptSphereRadius(0.25);
+
+            // Control player
+            this.controls = new ThirdPersonControls(this.third.camera, this.player, {
+                offset: new THREE.Vector3(0, 1, 0),
+                targetRadius: 4, // Distance from character
+                sensitivity: { x: 0.11, y: 0.11 },
+            });
+            this.controls.theta = 90;
+
+            // Get mouse to control camera
+            if (!isTouchDevice) {
+                let pointerLock = new PointerLock(this.game.canvas);
+                let pointerDrag = new PointerDrag(this.game.canvas);
+
+                pointerDrag.onMove((delta) => {
+                    if (pointerLock.isLocked()) {
+                        // Limit looking at sky
+                        if (
+                            this.controls.phi > -7 ||
+                            (this.controls.phi <= -7 && delta.y > 0)
+                        ) {
+                            this.moveTop = -delta.y;
+                        }
+
+                        this.moveRight = delta.x;
+                    }
+                });
+            }
+        });
     }
 
     getGroundPointer() {

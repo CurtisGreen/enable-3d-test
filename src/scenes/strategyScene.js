@@ -68,13 +68,16 @@ export default class StrategyScene extends Scene3D {
         };
 
         // Box without physics
-        this.third.add.box({ x: 0, y: 0, z: 0 }, { lambert: { color: "red" } });    // Origin
-        this.third.add.box({ x: 2, y: 0, z: 0 }, { lambert: { color: "blue" } });   // X
-        this.third.add.box({ x: 0, y: 0, z: 2 }, { lambert: { color: "green" } });  // Z
+        this.third.add.box({ x: 0, y: 0, z: 0 }, { lambert: { color: "red" } }); // Origin
+        this.third.add.box({ x: 2, y: 0, z: 0 }, { lambert: { color: "blue" } }); // X
+        this.third.add.box({ x: 0, y: 0, z: 2 }, { lambert: { color: "green" } }); // Z
         this.third.add.box({ x: 0, y: 2, z: 0 }, { lambert: { color: "yellow" } }); // Y
 
         // Add selectable unit
-        this.unit = this.third.add.box({ x: 10, y: 1, z: 10 }, { lambert: { color: "gray" } });
+        this.unit = this.third.add.box(
+            { x: 10, y: 1, z: 10 },
+            { lambert: { color: "gray" } }
+        );
 
         // Show where your cursor is
         this.selectionBox = this.third.add.box(
