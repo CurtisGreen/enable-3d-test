@@ -36,6 +36,8 @@ export default class MainScene extends Scene3D {
         this.moveRight = 0;
         this.player = {};
         this.prevY = 0;
+        this.prevInnerWidth = 0;
+        this.prevInnerHeight = 0;
     }
 
     preload() {
@@ -46,10 +48,7 @@ export default class MainScene extends Scene3D {
     async create() {
         // Get graphics settings
         if (this.changeResolution) {
-            this.scale.resize(this.width, this.height);
-            this.third.renderer.setSize(this.width, this.height);
-            this.third.camera.aspect = this.width / this.height;
-            this.third.camera.updateProjectionMatrix();
+            this.updateResolution();
         }
 
         // Create environment
@@ -94,9 +93,9 @@ export default class MainScene extends Scene3D {
 
         // Create box on click
         this.input.on("pointerdown", (pointer) => {
-            if (!this.pointerLock.isLocked()) {
-                console.log("requested");
-                this.pointerLock.request();
+            // Re-enable pointer lock if it has been stopped
+            if (!this.pointerLock._isRunning) {
+                this.pointerLock._isRunning = true;
             }
             this.third.physics.add.box(this.getGroundPointer());
         });
@@ -147,6 +146,7 @@ export default class MainScene extends Scene3D {
 
             // Get mouse to control camera
             if (!isTouchDevice) {
+                console.log(this.game.canvas);
                 this.pointerLock = new PointerLock(this.game.canvas);
                 let pointerDrag = new PointerDrag(this.game.canvas);
 
@@ -175,7 +175,7 @@ export default class MainScene extends Scene3D {
         if (this.ground) {
             // Check line of sight to ground
             const raycaster = new THREE.Raycaster();
-            raycaster.setFromCamera({ x: 0.1, y: 0.1 }, this.third.camera);
+            raycaster.setFromCamera({ x: 0, y: -0.05 }, this.third.camera); // Use position relative from center
             const intersection = raycaster.intersectObject(this.ground);
 
             if (intersection.length != 0) {
@@ -353,6 +353,16 @@ export default class MainScene extends Scene3D {
     update() {
         this.updateMovement();
         this.updatePlacementBox();
+
+        // Check resolution change
+        if (
+            window.innerHeight != this.prevInnerHeight ||
+            window.innerWidth != this.prevInnerWidth
+        ) {
+            this.updateResolution();
+            this.prevInnerWidth = window.innerWidth;
+            this.prevInnerHeight = window.innerHeight;
+        }
     }
 
     getPointer() {
@@ -362,5 +372,29 @@ export default class MainScene extends Scene3D {
         const x = (pointer.x / this.cameras.main.width) * 2 - 1;
         const y = -(pointer.y / this.cameras.main.height) * 2 + 1;
         return { x, y };
+    }
+
+    updateResolution() {
+        let width, height;
+        if (window.innerWidth - 10 < this.width) {
+            width = window.innerWidth - 10;
+        } else {
+            width = this.width;
+        }
+
+        if (window.innerHeight - 10 < this.height) {
+            height = window.innerHeight - 10;
+        } else {
+            height = this.height;
+        }
+
+        this.setResolution(width, height);
+    }
+
+    setResolution(width, height) {
+        this.scale.resize(width, height);
+        this.third.renderer.setSize(width, height);
+        this.third.camera.aspect = width / height;
+        this.third.camera.updateProjectionMatrix();
     }
 }

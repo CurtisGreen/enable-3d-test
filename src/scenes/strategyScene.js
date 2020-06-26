@@ -112,7 +112,7 @@ export default class StrategyScene extends Scene3D {
 
     update() {
         this.keyboardMove();
-        this.mouseMove();
+        //this.mouseMove();
 
         this.updateSelectionBox();
 
@@ -154,6 +154,7 @@ export default class StrategyScene extends Scene3D {
         if (this.lerping) {
             return;
         }
+
         let forward, right;
         let forwardVal;
         let rightVal;
@@ -270,6 +271,10 @@ export default class StrategyScene extends Scene3D {
     }
 
     mouseMove() {
+        if (this.lerping) {
+            return;
+        }
+
         const { x, y } = this.getPointer2d();
         if (x <= -0.9) {
             console.log("move left", x);
@@ -313,7 +318,7 @@ export default class StrategyScene extends Scene3D {
         const pointer = this.input.activePointer;
         const x = (pointer.x / this.cameras.main.width) * 2 - 1;
         const y = -(pointer.y / this.cameras.main.height) * 2 + 1;
-        console.log(pointer.x, pointer.y);
+        //console.log(pointer.x, pointer.y);
         return { x, y };
     }
 
@@ -368,5 +373,7 @@ export default class StrategyScene extends Scene3D {
         this.third.renderer.setSize(width, height);
         this.third.camera.aspect = width / height;
         this.third.camera.updateProjectionMatrix();
+
+        console.log(width, height);
     }
 }

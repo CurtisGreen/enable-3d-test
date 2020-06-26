@@ -8,10 +8,9 @@ const config = {
     type: Phaser.WEBGL,
     backgroundColor: "#ffffff",
     scale: {
-        mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: window.innerWidth * Math.max(1, window.devicePixelRatio / 2),
-        height: window.innerHeight * Math.max(1, window.devicePixelRatio / 2),
+        width: window.innerWidth * Math.max(1, window.devicePixelRatio / 2) - 10,
+        height: window.innerHeight * Math.max(1, window.devicePixelRatio / 2) - 10,
     },
     parent: "phaser-game",
     scene: [PreloadScene, MainScene, StrategyScene, MenuScene],
