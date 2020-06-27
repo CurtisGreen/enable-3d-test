@@ -1,4 +1,5 @@
 import { Button } from "../ui/button.js";
+import { updateResolution } from "../utilities.js";
 const {
     enable3d,
     Scene3D,
@@ -44,7 +45,7 @@ export default class MainScene extends Scene3D {
 
     async create() {
         // Get graphics settings
-        this.updateResolution();
+        updateResolution(this);
 
         // Create environment
         this.third.warpSpeed("light", "sky");
@@ -355,43 +356,10 @@ export default class MainScene extends Scene3D {
             window.innerHeight != this.prevInnerHeight ||
             window.innerWidth != this.prevInnerWidth
         ) {
-            this.updateResolution();
+            updateResolution(this);
             this.prevInnerWidth = window.innerWidth;
             this.prevInnerHeight = window.innerHeight;
         }
-    }
-
-    getPointer() {
-        // calculate mouse position in normalized device coordinates
-        // (-1 to +1) for both components
-        const pointer = this.input.activePointer;
-        const x = (pointer.x / this.cameras.main.width) * 2 - 1;
-        const y = -(pointer.y / this.cameras.main.height) * 2 + 1;
-        return { x, y };
-    }
-
-    updateResolution() {
-        let width, height;
-        if (window.innerWidth - 10 < this.width) {
-            width = window.innerWidth - 10;
-        } else {
-            width = this.width;
-        }
-
-        if (window.innerHeight - 10 < this.height) {
-            height = window.innerHeight - 10;
-        } else {
-            height = this.height;
-        }
-
-        this.setResolution(width, height);
-    }
-
-    setResolution(width, height) {
-        this.scale.resize(width, height);
-        this.third.renderer.setSize(width, height);
-        this.third.camera.aspect = width / height;
-        this.third.camera.updateProjectionMatrix();
     }
 
     pausePointerLock(isPaused) {

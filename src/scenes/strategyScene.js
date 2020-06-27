@@ -1,4 +1,5 @@
 import { Button } from "../ui/button.js";
+import { getPointer, updateResolution, setResolution } from "../utilities.js";
 const {
     enable3d,
     Scene3D,
@@ -34,7 +35,7 @@ export default class StrategyScene extends Scene3D {
 
     create() {
         // Get graphics settings
-        this.updateResolution();
+        updateResolution(this);
 
         // Create environment
         this.third.warpSpeed("light", "sky");
@@ -42,7 +43,7 @@ export default class StrategyScene extends Scene3D {
         // Add ground
         this.ground = this.third.physics.add.box({
             x: 11.5,
-            y: 0,
+            y: -0.5,
             z: 11.5,
             width: 20,
             depth: 20,
@@ -139,7 +140,7 @@ export default class StrategyScene extends Scene3D {
             window.innerHeight != this.prevInnerHeight ||
             window.innerWidth != this.prevInnerWidth
         ) {
-            this.updateResolution();
+            updateResolution(this);
             this.prevInnerWidth = window.innerWidth;
             this.prevInnerHeight = window.innerHeight;
         }
@@ -285,25 +286,21 @@ export default class StrategyScene extends Scene3D {
             return;
         }
 
-        const { x, y } = this.getPointer2d();
+        const { x, y } = getPointer(this);
         if (x <= -0.9) {
-            //console.log("move left", x);
             this.moveDirection("left");
         } else if (x >= 0.9) {
-            //console.log("move right", x);
             this.moveDirection("right");
         }
 
         if (y <= -0.9) {
-            //console.log("move down", y);
             this.moveDirection("backward");
         } else if (y >= 0.9) {
-            //console.log("move up", y);
             this.moveDirection("forward");
         }
     }
 
-    getIntersection(objects, source = this.getPointer2d()) {
+    getIntersection(objects, source = getPointer(this)) {
         if (objects.length != 0) {
             // Check line of sight to object
             const raycaster = new THREE.Raycaster();
@@ -311,6 +308,7 @@ export default class StrategyScene extends Scene3D {
             const intersection = raycaster.intersectObjects(objects);
 
             if (intersection.length != 0) {
+                console.log(intersection[0].point.y);
                 let output = {
                     x: Math.round(intersection[0].point.x),
                     y: Math.round(intersection[0].point.y),
@@ -323,16 +321,6 @@ export default class StrategyScene extends Scene3D {
         } else {
             return [false, false];
         }
-    }
-
-    getPointer2d() {
-        // calculate mouse position in normalized device coordinates
-        // (-1 to +1) for both components
-        const pointer = this.input.activePointer;
-        const x = (pointer.x / this.cameras.main.width) * 2 - 1;
-        const y = -(pointer.y / this.cameras.main.height) * 2 + 1;
-        //console.log(pointer.x, pointer.y);
-        return { x, y };
     }
 
     updateSelectionBox() {
@@ -362,31 +350,5 @@ export default class StrategyScene extends Scene3D {
                 this.unit.material.color.set("gray");
             }
         }
-    }
-
-    updateResolution() {
-        let width, height;
-        if (window.innerWidth - 10 < this.width) {
-            width = window.innerWidth - 10;
-        } else {
-            width = this.width;
-        }
-
-        if (window.innerHeight - 10 < this.height) {
-            height = window.innerHeight - 10;
-        } else {
-            height = this.height;
-        }
-
-        this.setResolution(width, height);
-    }
-
-    setResolution(width, height) {
-        this.scale.resize(width, height);
-        this.third.renderer.setSize(width, height);
-        this.third.camera.aspect = width / height;
-        this.third.camera.updateProjectionMatrix();
-
-        console.log(width, height);
     }
 }
