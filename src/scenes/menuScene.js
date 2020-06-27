@@ -32,11 +32,6 @@ export default class MenuScene extends Phaser.Scene {
                 this.scene.launch("MainScene", [width, height]);
                 this.currentLevel = "MainScene";
             }
-            // Prevent pointer lock when clicking on the button
-            else {
-                let curScene = this.scene.get(this.currentLevel);
-                curScene.pointerLock.exit();
-            }
         });
 
         // Third person, controls camera, fixed angle

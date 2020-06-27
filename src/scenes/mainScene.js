@@ -22,9 +22,6 @@ export default class MainScene extends Scene3D {
             let [width, height] = data;
             this.width = width;
             this.height = height;
-            this.changeResolution = true;
-        } else {
-            this.changeResolution = false;
         }
 
         this.accessThirdDimension();
@@ -47,9 +44,7 @@ export default class MainScene extends Scene3D {
 
     async create() {
         // Get graphics settings
-        if (this.changeResolution) {
-            this.updateResolution();
-        }
+        this.updateResolution();
 
         // Create environment
         this.third.warpSpeed("light", "sky");
@@ -94,8 +89,9 @@ export default class MainScene extends Scene3D {
         // Create box on click
         this.input.on("pointerdown", (pointer) => {
             // Re-enable pointer lock if it has been stopped
+            console.log(this.pointerLock._isRunning);
             if (!this.pointerLock._isRunning) {
-                this.pointerLock._isRunning = true;
+                //this.pausePointerLock(false);
             }
             this.third.physics.add.box(this.getGroundPointer());
         });
@@ -396,5 +392,11 @@ export default class MainScene extends Scene3D {
         this.third.renderer.setSize(width, height);
         this.third.camera.aspect = width / height;
         this.third.camera.updateProjectionMatrix();
+    }
+
+    pausePointerLock(isPaused) {
+        if (this.pointerLock != undefined) {
+            this.pointerLock._isRunning = !isPaused;
+        }
     }
 }

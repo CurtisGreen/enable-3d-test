@@ -22,9 +22,6 @@ export default class StrategyScene extends Scene3D {
             let [width, height] = data;
             this.width = width;
             this.height = height;
-            this.changeResolution = true;
-        } else {
-            this.changeResolution = false;
         }
 
         this.accessThirdDimension();
@@ -37,9 +34,7 @@ export default class StrategyScene extends Scene3D {
 
     create() {
         // Get graphics settings
-        if (this.changeResolution) {
-            this.setResolution(this.width, this.height);
-        }
+        this.updateResolution();
 
         // Create environment
         this.third.warpSpeed("light", "sky");
@@ -112,7 +107,7 @@ export default class StrategyScene extends Scene3D {
 
     update() {
         this.keyboardMove();
-        //this.mouseMove();
+        this.mouseMove();
 
         this.updateSelectionBox();
 
@@ -150,16 +145,13 @@ export default class StrategyScene extends Scene3D {
         }
     }
 
-    keyboardMove() {
+    moveDirection(dir) {
         if (this.lerping) {
             return;
         }
 
-        let forward, right;
-        let forwardVal;
-        let rightVal;
-
         // Get cardinal direction based on camera rotation
+        let forward, right, forwardVal, rightVal;
         switch (this.currentDirection) {
             case 0: // Forwards
                 forward = "x";
@@ -186,17 +178,35 @@ export default class StrategyScene extends Scene3D {
                 rightVal = -0.1;
                 break;
         }
+
+        switch (dir) {
+            case "forward":
+                this.third.camera.position[forward] += forwardVal;
+                break;
+            case "backward":
+                this.third.camera.position[forward] -= forwardVal;
+                break;
+            case "right":
+                this.third.camera.position[right] += rightVal;
+                break;
+            case "left":
+                this.third.camera.position[right] -= rightVal;
+                break;
+        }
+    }
+
+    keyboardMove() {
         // Move map with wasd
         if (this.keys.w.isDown) {
-            this.third.camera.position[forward] += forwardVal;
+            this.moveDirection("forward");
         } else if (this.keys.s.isDown) {
-            this.third.camera.position[forward] -= forwardVal;
+            this.moveDirection("backward");
         }
 
         if (this.keys.d.isDown) {
-            this.third.camera.position[right] += rightVal;
+            this.moveDirection("right");
         } else if (this.keys.a.isDown) {
-            this.third.camera.position[right] -= rightVal;
+            this.moveDirection("left");
         }
     }
 
@@ -277,16 +287,19 @@ export default class StrategyScene extends Scene3D {
 
         const { x, y } = this.getPointer2d();
         if (x <= -0.9) {
-            console.log("move left", x);
-            this.third.camera.position.z -= 0.1;
+            //console.log("move left", x);
+            this.moveDirection("left");
         } else if (x >= 0.9) {
-            console.log("move right", x);
+            //console.log("move right", x);
+            this.moveDirection("right");
         }
 
         if (y <= -0.9) {
-            console.log("move down", y);
+            //console.log("move down", y);
+            this.moveDirection("backward");
         } else if (y >= 0.9) {
-            console.log("move up", y);
+            //console.log("move up", y);
+            this.moveDirection("forward");
         }
     }
 
@@ -353,14 +366,14 @@ export default class StrategyScene extends Scene3D {
 
     updateResolution() {
         let width, height;
-        if (window.innerWidth < this.width) {
-            width = window.innerWidth;
+        if (window.innerWidth - 10 < this.width) {
+            width = window.innerWidth - 10;
         } else {
             width = this.width;
         }
 
-        if (window.innerHeight < this.height) {
-            height = window.innerHeight;
+        if (window.innerHeight - 10 < this.height) {
+            height = window.innerHeight - 10;
         } else {
             height = this.height;
         }
