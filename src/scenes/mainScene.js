@@ -89,11 +89,6 @@ export default class MainScene extends Scene3D {
 
         // Create box on click
         this.input.on("pointerdown", (pointer) => {
-            // Re-enable pointer lock if it has been stopped
-            console.log(this.pointerLock._isRunning);
-            if (!this.pointerLock._isRunning) {
-                //this.pausePointerLock(false);
-            }
             this.third.physics.add.box(this.getGroundPointer());
         });
 
@@ -166,6 +161,14 @@ export default class MainScene extends Scene3D {
         this.events.on("shutdown", () => {
             this.pointerLock.exit();
         });
+
+        // Directions
+        let width = this.cameras.main.width;
+        let text = "Move: WASD\n";
+        text += "Rotate: Move mouse\n";
+        text += "Place blocks: left click";
+        this.directions = this.add.text(width / 2, 40, text);
+        this.directions.setOrigin(0.5, 0);
     }
 
     getGroundPointer() {

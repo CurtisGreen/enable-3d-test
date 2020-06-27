@@ -30,3 +30,21 @@ export function setResolution(width, height, scene) {
     scene.third.camera.aspect = width / height;
     scene.third.camera.updateProjectionMatrix();
 }
+
+export function cameraDebug(scene) {
+    let width = scene.cameras.main.width;
+    let x = Math.round(scene.third.camera.position.x);
+    let y = Math.round(scene.third.camera.position.y);
+    let z = Math.round(scene.third.camera.position.z);
+
+    if (scene.debug == undefined) {
+        scene.debug = {};
+        scene.debug.x = scene.add.text(width - 40, 0, x, { color: "blue" });
+        scene.debug.y = scene.add.text(width - 40, 14, y, { color: "yellow" });
+        scene.debug.z = scene.add.text(width - 40, 28, z, { color: "green" });
+    } else {
+        scene.debug.x.text = x;
+        scene.debug.y.text = y;
+        scene.debug.z.text = z;
+    }
+}

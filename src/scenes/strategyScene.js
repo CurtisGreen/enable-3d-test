@@ -1,5 +1,10 @@
 import { Button } from "../ui/button.js";
-import { getPointer, updateResolution, setResolution } from "../utilities.js";
+import {
+    getPointer,
+    updateResolution,
+    setResolution,
+    cameraDebug,
+} from "../utilities.js";
 const {
     enable3d,
     Scene3D,
@@ -53,8 +58,10 @@ export default class StrategyScene extends Scene3D {
 
         // Adjust the camera
         this.angleDiff = 10;
+        this.maxCameraY = 15;
+        this.minCameraY = 5;
         let startX = -5;
-        this.third.camera.position.set(startX, 15, 0);
+        this.third.camera.position.set(startX, this.maxCameraY, 0);
         this.third.camera.lookAt(startX + this.angleDiff, 0, 0);
 
         // Controls
@@ -65,6 +72,7 @@ export default class StrategyScene extends Scene3D {
             d: "d",
             left: "left",
             right: "right",
+            up: "up",
             down: "down",
         });
 
@@ -73,6 +81,21 @@ export default class StrategyScene extends Scene3D {
         });
         this.keys.right.on("up", () => {
             this.rotateCamera("right");
+        });
+        this.keys.up.on("up", () => {
+            this.rotateCamera("up");
+        });
+        this.keys.down.on("up", () => {
+            this.rotateCamera("down");
+        });
+
+        // Check mouse scroll
+        this.input.on("wheel", (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
+            if (deltaY > 0) {
+                this.rotateCamera("up");
+            } else {
+                this.rotateCamera("down");
+            }
         });
 
         // Box without physics
@@ -83,7 +106,7 @@ export default class StrategyScene extends Scene3D {
 
         // Add selectable unit
         this.unit = this.third.add.box(
-            { x: 10, y: 1, z: 10 },
+            { x: 10, y: 0.5, z: 10 },
             { lambert: { color: "gray" } }
         );
 
@@ -93,24 +116,55 @@ export default class StrategyScene extends Scene3D {
             { lambert: { color: 0x0000ff } }
         );
 
-        // Create box on click
+        // Select or move units on mouse down
         this.input.on("pointerdown", (pointer) => {
             const [point, object] = this.getIntersection([this.unit, this.ground]);
+            // Clicked on unit
             if (point && object.id == this.unit.id) {
                 this.unit.material.color.set("red");
                 this.unitSelected = true;
-            } else if (this.unitSelected) {
+            }
+            // Clicked on ground
+            else if (this.unitSelected) {
                 this.unit.material.color.set("gray");
                 this.unitSelected = false;
+
+                let endX = point.x;
+                let endZ = point.z;
+                let temp = this.unit.position.clone();
+                this.tweens.add({
+                    targets: temp,
+                    x: endX,
+                    z: endZ,
+                    duration: 1000,
+                    ease: (t) => {
+                        return t;
+                    },
+                    onComplete: () => {},
+                    onUpdate: () => {
+                        this.unit.position.set(temp.x, temp.y, temp.z);
+                    },
+                    delay: 50,
+                });
             }
         });
+
+        // Directions
+        let width = this.cameras.main.width;
+        let text = "Move: WASD or hover mouse toward screen edge\n";
+        text += "Rotate: left/right arrow keys\n";
+        text += "Zoom: mouse wheel or up/down arrow keys\n";
+        text += "Move block: click block then click another location";
+        this.directions = this.add.text(width / 2, 40, text, { color: "black" });
+        this.directions.setOrigin(0.5, 0);
     }
 
     update() {
         this.keyboardMove();
         this.mouseMove();
-
         this.updateSelectionBox();
+
+        cameraDebug(this);
 
         // Lerp camera to destination
         if (this.lerping) {
@@ -121,7 +175,9 @@ export default class StrategyScene extends Scene3D {
                 curPos.x >= this.lerpDest.x - 0.1 &&
                 curPos.x <= this.lerpDest.x + 0.1 &&
                 curPos.z >= this.lerpDest.z - 0.1 &&
-                curPos.y <= this.lerpDest.y + 0.1
+                curPos.z <= this.lerpDest.z + 0.1 &&
+                curPos.y <= this.lerpDest.y + 0.1 &&
+                curPos.y >= this.lerpDest.y - 0.1
             ) {
                 this.lerping = false;
                 this.third.camera.position.set(
@@ -260,25 +316,40 @@ export default class StrategyScene extends Scene3D {
                 break;
         }
 
-        if (dir == "right") {
-            this.currentDirection += 1;
-            if (this.currentDirection > 3) {
-                this.currentDirection = 0;
-            }
+        switch (dir) {
+            case "right":
+                this.currentDirection += 1;
+                if (this.currentDirection > 3) {
+                    this.currentDirection = 0;
+                }
 
-            this.lerping = true;
-            this.lerpDest = { x: rightX, y: rightY, z: rightZ };
-            this.lerpCenter = { x: lookX, y: lookY, z: lookZ };
-        } else if (dir == "left") {
-            this.currentDirection -= 1;
-            if (this.currentDirection < 0) {
-                this.currentDirection = 3;
-            }
+                this.lerpDest = { x: rightX, y: rightY, z: rightZ };
+                this.lerping = true;
+                break;
+            case "left":
+                this.currentDirection -= 1;
+                if (this.currentDirection < 0) {
+                    this.currentDirection = 3;
+                }
 
-            this.lerping = true;
-            this.lerpDest = { x: leftX, y: leftY, z: leftZ };
-            this.lerpCenter = { x: lookX, y: lookY, z: lookZ };
+                this.lerpDest = { x: leftX, y: leftY, z: leftZ };
+                this.lerping = true;
+                break;
+            case "up":
+                if (this.third.camera.position.y < this.maxCameraY) {
+                    this.lerpDest = { x: x, y: y + 2, z: z };
+                    this.lerping = true;
+                }
+                break;
+            case "down":
+                if (this.third.camera.position.y > this.minCameraY) {
+                    this.lerpDest = { x: x, y: y - 2, z: z };
+                    this.lerping = true;
+                }
+                break;
         }
+
+        this.lerpCenter = { x: lookX, y: lookY, z: lookZ };
     }
 
     mouseMove() {
@@ -308,7 +379,6 @@ export default class StrategyScene extends Scene3D {
             const intersection = raycaster.intersectObjects(objects);
 
             if (intersection.length != 0) {
-                console.log(intersection[0].point.y);
                 let output = {
                     x: Math.round(intersection[0].point.x),
                     y: Math.round(intersection[0].point.y),
