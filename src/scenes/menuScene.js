@@ -51,17 +51,21 @@ export default class MenuScene extends Phaser.Scene {
             }
         });
 
-        // TBD
-        /*(y += buttonHeight * 2;
-        let lv3 = new Button(this, x, y, buttonWidth, buttonHeight, "Level 3");
+        // Run scene
+        y += buttonHeight * 2;
+        let lv3 = new Button(this, x, y, buttonWidth, buttonHeight, "Movement type 3");
         lv3.on("pointerdown", () => {
-            //if (this.currentLevel != "MainCopyScene") {
+            if (this.currentLevel != "RunScene") {
+                let curSceneObj = this.scene.get(this.currentLevel);
+                let width = curSceneObj.width;
+                let height = curSceneObj.height;
+                console.log(width, height);
                 this.scene.stop(this.currentLevel);
 
                 console.log("lv3");
-                this.scene.launch("MainCopyScene", {});
-                this.currentLevel = "MainCopyScene";
-            //}
-        });*/
+                this.scene.launch("RunScene", [width, height]);
+                this.currentLevel = "RunScene";
+            }
+        });
     }
 }

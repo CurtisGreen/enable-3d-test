@@ -138,7 +138,6 @@ export default class MainScene extends Scene3D {
 
             // Get mouse to control camera
             if (!isTouchDevice) {
-                console.log(this.game.canvas);
                 this.pointerLock = new PointerLock(this.game.canvas);
                 let pointerDrag = new PointerDrag(this.game.canvas);
 
