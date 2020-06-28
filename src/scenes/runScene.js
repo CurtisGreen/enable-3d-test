@@ -49,40 +49,75 @@ export default class RunScene extends Scene3D {
 
         // Add ground
         let length = 200;
-        this.ground = this.third.physics.add.box({
-            x: 0,
-            y: -1,
-            z: 1,
-            width: 6,
-            depth: length,
-            height: 1,
-            mass: 0,
-        });
+        this.ground = this.third.physics.add.box(
+            {
+                x: 0,
+                y: -1,
+                z: 1,
+                width: 6,
+                depth: 40,
+                height: 1,
+                mass: 0,
+            },
+            { lambert: { color: "grey" } }
+        );
 
+        // Platforms
+        let numSegments = 8;
+        let segmentLength = length / numSegments;
         for (let i = 0; i < length; i++) {
-            if (i % 6 == 0) {
+            if (i % segmentLength == 0) {
                 this.third.physics.add.box({
-                    x: 1,
+                    x: 0,
                     y: 0,
                     z: -1 * i,
                     width: 2,
                     height: 0.1,
-                    depth: 2,
+                    depth: numSegments * 2,
                     mass: 0,
                 });
+
+                this.third.physics.add.box({
+                    x: -4,
+                    y: 0,
+                    z: -1 * i + 4,
+                    width: 2,
+                    height: 0.1,
+                    depth: numSegments * 2,
+                    mass: 0,
+                });
+
+                // this.third.physics.add.box({
+                //     x: 4,
+                //     y: 0,
+                //     z: -1 * i - 4,
+                //     width: 2,
+                //     height: 0.1,
+                //     depth: numSegments * 2,
+                //     mass: 0,
+                // });
             }
         }
 
         // Walls
-        this.third.physics.add.box({
-            x: -3,
-            y: 0,
-            z: 1,
-            width: 1,
-            depth: length,
-            height: 5,
-            mass: 0,
-        });
+        // this.third.physics.add.box({
+        //     x: -3,
+        //     y: 0,
+        //     z: 1,
+        //     width: 1,
+        //     depth: 40,
+        //     height: 5,
+        //     mass: 0,
+        // });
+        // this.third.physics.add.box({
+        //     x: 3,
+        //     y: 0,
+        //     z: 1,
+        //     width: 1,
+        //     depth: 40,
+        //     height: 5,
+        //     mass: 0,
+        // });
 
         // Make the player box
         this.player = this.third.physics.add.sphere({
@@ -95,6 +130,12 @@ export default class RunScene extends Scene3D {
         this.player.body.setAngularFactor(0, 0, 0);
         this.player.body.setCcdMotionThreshold(1e-7);
         this.player.body.setCcdSweptSphereRadius(0.25);
+
+        // Add collider to player
+        this.player.body.on.collision((object, event) => {
+            this.isTouching = true;
+            this.isJumping = false;
+        });
 
         // Controls
         this.keys = {
@@ -147,8 +188,18 @@ export default class RunScene extends Scene3D {
     }
 
     jump() {
-        if (this.player && this.canJump) {
+        if (this.player && !this.isJumping && this.isTouching && !this.isFalling) {
+            console.log("jump");
             this.player.body.applyForceY(6);
+            this.isJumping = true;
+            this.isTouching = false;
+            this.canJump = false;
+
+            // Lockout jump for half second
+            let _this = this;
+            setTimeout(function () {
+                _this.canJump = true;
+            }, 1000);
         }
     }
 
@@ -165,25 +216,22 @@ export default class RunScene extends Scene3D {
                 xVel = 4;
             }
 
-            // Jump
-            if (this.keys.space.isDown) {
-                this.jump();
-            }
-            let yVel = this.player.body.velocity.y;
-
             // Check jump conditions
-            if (
-                this.player.position.y <= this.prevY &&
-                this.player.body.velocity.y > -0.1 &&
-                this.player.body.velocity.y < 0.1
-            ) {
-                this.canJump = true;
+            if (this.player.body.velocity.y < -0.1) {
+                this.isFalling = true;
             } else {
-                this.canJump = false;
+                this.isFalling = false;
             }
             this.prevY = this.player.position.y;
 
+            // Jump
+            if (this.keys.space.isDown && this.canJump) {
+                this.jump();
+            }
+            this.prevSpacePress = this.keys.space.isDown;
+
             // Player always moves forward
+            let yVel = this.player.body.velocity.y; // Maintain jump
             this.player.body.setVelocity(xVel, yVel, -5);
             this.player.body.needUpdate = true;
 
